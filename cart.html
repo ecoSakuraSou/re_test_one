@@ -1,0 +1,235 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-touch-fullscreen" content="yes" />
+<meta name="format-detection" content="telephone=no"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="msapplication-tap-highlight" content="no" />
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,user-scalable=no" />
+<title>购物车</title>
+<link rel="stylesheet" type="text/css" href="styles/base.css">
+<link rel="stylesheet" type="text/css" href="styles/common.css">
+<link rel="stylesheet" type="text/css" href="styles/cart.css">
+
+</head>
+<body>
+
+
+
+
+
+<header id="header" class="fixed">
+	<div class="header-wrap">
+		<div class="header-l">
+			<a href="javascript:history.go(-1)">
+				<i class="back"></i>
+			</a>
+		</div>
+		<div class="header-title">
+			<h1>购物车</h1>
+		</div>
+		<div class="header-r">
+			<a id="header-nav" href="javascript:;;"><i class="more"></i><sup></sup></a>
+		</div>
+	</div>
+	<div class="nav-layout">
+		<div class="nav-menu">
+			<span class="arrow"></span>
+			<ul>
+				<li><a href="../index.html"><i class="home"></i>首页</a></li>
+				<li><a href="../search.html"><i class="search"></i>搜索</a></li>
+				<li><a href="../member/home.html"><i class="member"></i>我的商城</a></li>
+                <li><a href="javascript:;;"><i class="message"></i>消息<sup></sup></a></li>
+			</ul>
+		</div>
+	</div>
+</header>
+<div class="main-layout">
+  <div id="cart-list-wp"></div>
+  <div id="cart-list-trigger"></div>
+</div>
+<footer id="footer" class="bottom"></footer>
+<div class="pre-loading hide">
+  <div class="pre-block">
+    <div class="spinner"><i></i></div>载入中...
+  </div>
+</div>
+<script id="cart-list" type="text/html">
+	<% 
+	if(store_cart_list != null && store_cart_list.length >0){%>
+		<% for (var i = 0;i<store_cart_list.length;i++){%>
+			<div class="cart-container">
+				<dl class="cart-store">
+					<dt><span class="store-check">
+							<input class="store_checkbox" type="checkbox" checked>
+						</span>
+						<i class="icon-store"></i>
+						<%=store_cart_list[i].store_name%>
+						<% if (store_cart_list[i].store_voucher_list && store_cart_list[i].store_voucher_list.length > 0) { %>
+						<span class="handle">
+							<a href="javascript:;;" class="voucher animation-up"><i></i>领券</a>
+						</span>
+						<% } %>
+					</dt>
+					<% if (store_cart_list[i].free_freight) { %>
+					<dd class="store-activity">
+						<em>免运费</em>
+						<span><%=store_cart_list[i].free_freight%></span>
+					</dd>
+					<% } %>
+					<% if (store_cart_list[i].mansong) { %>
+					<dd class="store-activity" id = "mansong">
+      				<em>满即送</em>
+							<% 
+							var rules = store_cart_list[i].mansong.ext.rules;
+							for (var j=0; j<rules.length; j++) { var rule = rules[j]%>
+								<span>
+								单笔订单满<%=rule.price%>元
+								<% if (rule.discount > 0) { %>
+								，立减<%=rule.discount%>元
+								<% } %>
+								<% if (rule.ext) { %>
+								，送礼品：<img src="<%=rule.ext.goods_image_url%>"/>
+								<% } %>
+								</span>
+							<% } %>
+						<i class="arrow-down"></i>
+					</dd>
+					<% } %>
+				</dl>
+				<ul class="cart-item">
+				<% if (store_cart_list[i].goods_list) { %>
+					<% for (var j=0; j<store_cart_list[i].goods_list.length; j++) {var goods = store_cart_list[i].goods_list[j];%>
+					<li cart_id="<%=goods.cart_id%>" class="cart-litemw-cnt" >
+						<div class="goods-check">
+							<% if(goods.state == "正常"){%>
+								<input type="checkbox" <% if(goods.state == "正常"){%>checked<%}%> name="cart_id" value="<%=goods.cart_id%>" />
+							<%}else{%>
+								<p class="cart_invalid">失<br>效</p>
+							<%}%>
+							
+							
+						</div>
+						<div class="goods-pic">
+							<a href="<%=WapSiteUrl%>/product.html?goods_id=<%=goods.goods_id%>">
+								<img src="<%=goods.goods_image_url%>"/>
+							</a>
+						</div>
+						<dl class="goods-info">
+							<dt class="goods-name"> <a  <% if(goods.state != "正常"){%>style="color:#999"<%}%> href="<%=WapSiteUrl%>/product.html?goods_id=<%=goods.goods_id%>"> <%=goods.goods_name%> </a></dt>
+							<dd class="goods-type"><%=goods.spec_name%></dd>
+						</dl>
+						<div class="goods-del" cart_id="<%=goods.cart_id%>"><a href="javascript:;;"></a></div>
+						<div class="goods-subtotal" style="padding: 0.1rem;"> <span class="goods-price">￥<em><%=goods.goods_price%></em></span> 
+							<% if(goods.state != "正常"){%>
+							<span class="goods-sale font_grey" >
+							<%= goods.state%>
+							<%}%>
+							</span>
+							<span class="goods-sale">
+							<% if (!isEmpty(goods.groupbuy)) 
+								{%><em>团购</em><% } 
+							else if (!isEmpty(goods.xianshi)) 
+								{ %><em>限时折扣</em><% } 
+							else if (!isEmpty(goods.sole)) 
+								{ %><em><i></i>手机专享</em><% } %>
+							</span>
+							<% if(goods.state == "正常"){%>
+							<div class="value-box">
+								<span class="minus">
+									<a href="javascript:;;">&nbsp;</a>
+								</span>
+        						<span>
+									<input type="text" pattern="[0-9]*" readonly class="buy-num buynum" value="<%=goods.goods_num%>"/>
+								</span>
+								<span class="add">
+									<a href="javascript:;;">&nbsp;</a>
+								</span>
+							</div>
+							<%}%>
+							
+						</div>
+						<% if (goods.gift_list) { %>
+						<% for(var m in goods.gift_list){ var gift = goods.gift_list[m];%>
+							<div class="goods-gift">
+								<span><em>赠品</em><%=gift.gift_goodsname%>x<%=gift.gift_amount%></span>
+							</div>
+						<% } %>
+						<% } %>
+					</li>
+					<% } %>
+				<% } %>
+				</ul>
+						<% if (store_cart_list[i].store_voucher_list) { %>
+						<div class="bottom-mask">
+							<div class="bottom-mask-bg"></div>
+							<div class="bottom-mask-block">
+								<div class="bottom-mask-tip"><i></i>点击此处返回</div>
+								<div class="bottom-mask-top store-voucher">
+									<i class="icon-store"></i>
+									<%=store_cart_list[i].store_name%>&nbsp;&nbsp;领取店铺优惠券
+									<a href="javascript:;;" class="bottom-mask-close"><i></i></a>
+								</div>
+								<div class="bottom-mask-rolling">
+									<div class="bottom-mask-con">
+										<ul class="voucher-list">
+										<% for (var j=0; j<store_cart_list[i].store_voucher_list.length; j++) { 
+										var voucher = store_cart_list[i].store_voucher_list[j];%>
+										<li>
+											<dl>
+												<dt class="money">面额<em><%=voucher.voucher_t_price%></em>元</dt>
+												<dd class="need">需消费<%=voucher.voucher_t_limit%>使用</dd>
+												<dd class="time">至<%=$getLocalTime(voucher.voucher_t_end_date)%>前使用</dd>
+											</dl>
+											<a href="javascript:;;" class="btn" data-tid=<%=voucher.voucher_t_id%>>领取</a>
+										</li>
+										<% } %>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+						<% } %>
+					</div> 
+        <%}%>
+				<% if (check_out === true) {%>
+          <div class="cart-bottom">
+						<div class="all-check"><input class="all_checkbox" type="checkbox" checked></div>
+						<div class="total">
+							<dl class="total-money"><dt>合计：</dt><dd>￥<em><%=cart_sum%></em></dd></dl>
+            </div>
+						<div class="check-out ok">
+              <a href="javascript:;">去结算<span>(<%=cart_count%>)</span></a>
+						</div>
+          </div>
+				<% } else { %>
+					<div class="cart-bottom no-login">
+						<div class="cart-nologin-tip">结算购物车中的商品，需先登录商城</div>
+						<div class="cart-nologin-btn"><a href="../member/login.html" class="btn">登录</a>
+							<a href="../member/register.html" class="btn">注册</a>
+						</div>
+					</div>
+				<% } %>
+      <%}else{%>
+      <div class="norecord cart">
+				<div class="norecord-ico"><i></i></div>
+				<dl>
+					<dt>您的购物车还是空的</dt>
+					<dd>去挑一些中意的商品吧</dd>
+				</dl>
+				<a href="<%=WapSiteUrl%>" class="btn">随便逛逛</a>
+			</div>
+      <%}%>
+</script>
+<script type="text/javascript" src="scripts/zepto.min.js"></script> 
+<script type="text/javascript" src="scripts/config.js"></script> 
+<script type="text/javascript" src="scripts/template.js"></script> 
+<script type="text/javascript" src="scripts/common.js"></script> 
+<script type="text/javascript" src="scripts/simple-plugin.js"></script> 
+<script type="text/javascript" src="scripts/cart.js"></script>
+</body>
+</html>
